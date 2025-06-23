@@ -307,19 +307,26 @@ class IntelligentScraper:
             import time
             timestamp = int(time.time())
             
-            # Save to JSON file
-            output_data = {
-                "team_id": self.team_id,
-                "items": items
-            }
+            # Create the correct structure - each item as a separate object in the array
+            output_data = []
+            for item in items:
+                output_data.append({
+                    "team_id": self.team_id,
+                    "items": [item]  # Each item gets its own object with team_id and items array
+                })
             
+            # Save to JSON file
             output_filename = f"scraped_data_{timestamp}.json"
             with open(output_filename, 'w', encoding='utf-8') as f:
                 json.dump(output_data, f, indent=2, ensure_ascii=False)
             
             logger.info(f"Crawl results saved to {output_filename}")
             
-            return output_data
+            # Return the first item for compatibility with existing code
+            return {
+                "team_id": self.team_id,
+                "items": items
+            }
             
         except Exception as e:
             logger.error(f"Error parsing Firecrawl result: {e}")
