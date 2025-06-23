@@ -4,7 +4,7 @@ An enhanced layer for the THT Scraper that supports both direct URL scraping and
 
 ## ✨ New Capabilities
 
-### 🌐 Direct URL Scraping (Existing)
+### 🌐 Direct URL Scraping
 ```python
 # Traditional direct URL scraping
 "https://interviewing.io/blog"
@@ -12,7 +12,7 @@ An enhanced layer for the THT Scraper that supports both direct URL scraping and
 "aline_book.pdf"
 ```
 
-### 🤖 Natural Language Requests (New!)
+### 🤖 Natural Language Requests
 ```python
 # Natural language requests
 "Go to Quora software engineering and scrape the second post"
@@ -22,7 +22,7 @@ An enhanced layer for the THT Scraper that supports both direct URL scraping and
 "Go to Stack Overflow and get the most upvoted Python question"
 ```
 
-### 🕷️ Website Crawling (New!)
+### 🕷️ Website Crawling
 ```python
 # Crawl entire websites with Firecrawl
 "crawl https://interviewing.io/blog"
@@ -30,7 +30,7 @@ An enhanced layer for the THT Scraper that supports both direct URL scraping and
 "crawl https://medium.com/tag/python"
 ```
 
-### 🤖 Intelligent URL Processing (New!)
+### 🤖 Intelligent URL Processing
 ```python
 # Just provide a URL - the scraper intelligently decides whether to scrape or crawl
 "https://interviewing.io/blog/its-ok-to-postpone-your-interviews-if-youre-not-ready"  # → Scrapes single page
