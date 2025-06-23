@@ -39,6 +39,14 @@ except ImportError:
     FIRECRAWL_AVAILABLE = False
     logging.warning("firecrawl-py not available - crawling functionality will be limited")
 
+# Import OpenAI for intelligent decision making
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logging.warning("openai not available - intelligent decision making will be limited")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -85,6 +93,21 @@ class IntelligentScraper:
                 logger.warning("Firecrawl available but no API key found. Set FIRECRAWL_API_KEY in .env file")
         else:
             logger.info("Firecrawl not available - crawling functionality disabled")
+        
+        # Initialize OpenAI for intelligent decision making
+        self.openai_client = None
+        if OPENAI_AVAILABLE:
+            openai_api_key = os.getenv("OPENAI_API_KEY")
+            if openai_api_key:
+                try:
+                    self.openai_client = OpenAI(api_key=openai_api_key)
+                    logger.info("OpenAI client initialized successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize OpenAI client: {e}")
+            else:
+                logger.warning("OpenAI available but no API key found. Set OPENAI_API_KEY in .env file")
+        else:
+            logger.info("OpenAI not available - intelligent decision making disabled")
     
     def is_natural_language_request(self, request: str) -> bool:
         """
@@ -138,7 +161,26 @@ class IntelligentScraper:
         elif self.is_crawl_request(request):
             return await self.handle_crawl_request(request)
         else:
-            return await self.handle_direct_url(request, max_items)
+            # Check if it's a URL and use intelligent decision making
+            if self._is_url(request):
+                return await self.handle_intelligent_url_processing(request, max_items)
+            else:
+                return await self.handle_direct_url(request, max_items)
+    
+    def _is_url(self, text: str) -> bool:
+        """
+        Check if the text looks like a URL.
+        """
+        url_patterns = [
+            r'^https?://',
+            r'^www\.',
+            r'^[a-zA-Z0-9-]+\.(com|org|net|edu|io|co|dev)$'
+        ]
+        
+        for pattern in url_patterns:
+            if re.search(pattern, text.strip()):
+                return True
+        return False
     
     async def handle_direct_url(self, url: str, max_items: int = 10) -> Dict[str, Any]:
         """
@@ -571,6 +613,138 @@ class IntelligentScraper:
                 return True
         
         return False
+    
+    async def intelligently_decide_scraping_strategy(self, url: str) -> str:
+        """
+        Use OpenAI o1-mini to intelligently decide whether to scrape or crawl a URL.
+        Returns 'scrape' or 'crawl' based on the analysis.
+        """
+        if not OPENAI_AVAILABLE or not self.openai_client:
+            # Fallback to simple heuristics
+            return self._fallback_scraping_decision(url)
+        
+        try:
+            # Create a more specific prompt for the o1-mini model
+            decision_prompt = f"""
+            Analyze this URL and determine if it's a single page or a collection of pages.
+            
+            URL: {url}
+            
+            Rules:
+            - If the URL points to a specific article, blog post, or single page → respond "scrape"
+            - If the URL points to a homepage, blog index, or collection of pages → respond "crawl"
+            
+            Examples:
+            - https://example.com/blog/post-123 → scrape (specific post)
+            - https://example.com/blog → crawl (blog homepage)
+            - https://example.com/article/how-to-code → scrape (specific article)
+            - https://example.com/news → crawl (news homepage)
+            - https://example.com/docs/getting-started → scrape (specific doc page)
+            - https://example.com/docs → crawl (docs homepage)
+            - https://example.com/blog/2024/01/my-post → scrape (specific post)
+            - https://example.com/category/python → crawl (category page)
+            
+            Look for these patterns:
+            - URLs with /post/, /article/, /entry/, /story/, /2024/, /2023/ → usually scrape
+            - URLs ending with .html, .php, .aspx → usually scrape
+            - URLs with just /blog, /news, /docs, /category → usually crawl
+            - URLs with many slashes and specific titles → usually scrape
+            
+            Respond with exactly one word: "scrape" or "crawl"
+            """
+            
+            # Call o1-mini for intelligent decision (fixed parameter)
+            response = self.openai_client.chat.completions.create(
+                model="o1-mini",
+                messages=[
+                    {"role": "user", "content": decision_prompt}
+                ],
+                max_completion_tokens=10,  # Fixed: use max_completion_tokens instead of max_tokens
+                temperature=0.1
+            )
+            
+            decision = response.choices[0].message.content.strip().lower()
+            
+            # Validate the response
+            if decision in ['scrape', 'crawl']:
+                logger.info(f"Intelligent decision for {url}: {decision}")
+                return decision
+            else:
+                logger.warning(f"Invalid decision from o1-mini: {decision}, using fallback")
+                return self._fallback_scraping_decision(url)
+                
+        except Exception as e:
+            logger.error(f"Error in intelligent decision making: {e}")
+            return self._fallback_scraping_decision(url)
+    
+    def _fallback_scraping_decision(self, url: str) -> str:
+        """
+        Fallback decision logic when o1-mini is not available.
+        """
+        url_lower = url.lower()
+        
+        # Patterns that suggest single pages (scrape)
+        single_page_patterns = [
+            '/post/', '/article/', '/entry/', '/story/', '/blog/',
+            '/2024/', '/2023/', '/2022/', '/2021/', '/2020/',
+            '.html', '.php', '.aspx', '.jsp',
+            '/page/', '/single/', '/view/',
+            # Specific title patterns
+            '/how-to-', '/guide-', '/tutorial-', '/learn-',
+            '/getting-started', '/introduction', '/overview'
+        ]
+        
+        # Patterns that suggest collection pages (crawl)
+        collection_patterns = [
+            '/blog$', '/news$', '/docs$', '/articles$',
+            '/category/', '/tag/', '/topic/',
+            '/archive/', '/index$', '/home$',
+            '/search', '/filter', '/browse'
+        ]
+        
+        # Check for single page patterns first
+        for pattern in single_page_patterns:
+            if pattern in url_lower:
+                logger.info(f"Fallback decision: scrape (pattern: {pattern})")
+                return "scrape"
+        
+        # Check for collection patterns
+        for pattern in collection_patterns:
+            if pattern in url_lower:
+                logger.info(f"Fallback decision: crawl (pattern: {pattern})")
+                return "crawl"
+        
+        # Count slashes to estimate depth
+        slash_count = url.count('/')
+        if slash_count >= 4:  # Deep URL, likely single page
+            logger.info(f"Fallback decision: scrape (deep URL with {slash_count} slashes)")
+            return "scrape"
+        else:  # Shallow URL, likely collection
+            logger.info(f"Fallback decision: crawl (shallow URL with {slash_count} slashes)")
+            return "crawl"
+    
+    async def handle_intelligent_url_processing(self, url: str, max_items: int = 10) -> Dict[str, Any]:
+        """
+        Intelligently decide whether to scrape or crawl a URL using o1-mini.
+        """
+        logger.info(f"Intelligently processing URL: {url}")
+        
+        try:
+            # Use o1-mini to decide the best strategy
+            strategy = await self.intelligently_decide_scraping_strategy(url)
+            
+            if strategy == 'crawl':
+                logger.info(f"Intelligent decision: crawling {url}")
+                crawl_request = f"crawl {url}"
+                return await self.handle_crawl_request(crawl_request)
+            else:
+                logger.info(f"Intelligent decision: scraping {url}")
+                return await self.handle_direct_url(url, max_items)
+                
+        except Exception as e:
+            logger.error(f"Error in intelligent URL processing: {e}")
+            # Fallback to direct URL handling
+            return await self.handle_direct_url(url, max_items)
 
 # --- CLI Interface ---
 async def main():

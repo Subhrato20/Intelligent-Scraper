@@ -30,6 +30,15 @@ An enhanced layer for the THT Scraper that supports both direct URL scraping and
 "crawl https://medium.com/tag/python"
 ```
 
+### 🤖 Intelligent URL Processing (New!)
+```python
+# Just provide a URL - the scraper intelligently decides whether to scrape or crawl
+"https://interviewing.io/blog/its-ok-to-postpone-your-interviews-if-youre-not-ready"  # → Scrapes single page
+"https://interviewing.io/blog"  # → Crawls entire blog
+"https://medium.com/@user/how-to-code-better"  # → Scrapes single article
+"https://medium.com/tag/python"  # → Crawls all Python articles
+```
+
 ## 🚀 Quick Start
 
 ### Installation
@@ -55,6 +64,9 @@ OPENAI_API_KEY=your-openai-api-key
 
 # Required for website crawling
 FIRECRAWL_API_KEY=your-firecrawl-api-key
+
+# Required for intelligent URL processing (uses o1-mini)
+OPENAI_API_KEY=your-openai-api-key
 
 # Optional settings
 BROWSER_USE_TIMEOUT=300
@@ -90,6 +102,9 @@ async def main():
     # Website crawling (requires Firecrawl API key)
     result = await scraper.process_request("crawl https://interviewing.io/blog")
     
+    # Intelligent URL processing (requires OpenAI API key)
+    result = await scraper.process_request("https://interviewing.io/blog/its-ok-to-postpone-your-interviews-if-youre-not-ready")
+    
     print(f"Extracted {len(result['items'])} items")
 
 asyncio.run(main())
@@ -114,6 +129,13 @@ asyncio.run(main())
 - **Blog Crawling**: "crawl https://quill.co/blog"
 - **Tag Pages**: "crawl https://medium.com/tag/python"
 - **News Sites**: "crawl https://techcrunch.com"
+
+### Intelligent URL Processing
+- **Single Pages**: Automatically detected and scraped
+- **Blog Homepages**: Automatically detected and crawled
+- **Article Pages**: Automatically detected and scraped
+- **Documentation Sites**: Automatically detected and crawled
+- **News Sites**: Automatically detected and crawled
 
 ## 🏗️ Architecture
 
