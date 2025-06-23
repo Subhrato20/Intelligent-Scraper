@@ -31,6 +31,14 @@ except ImportError:
     BROWSER_USE_AVAILABLE = False
     logging.warning("browser-use not available - natural language requests will be limited")
 
+# Import Firecrawl for crawling functionality
+try:
+    from firecrawl import AsyncFirecrawlApp, ScrapeOptions
+    FIRECRAWL_AVAILABLE = True
+except ImportError:
+    FIRECRAWL_AVAILABLE = False
+    logging.warning("firecrawl-py not available - crawling functionality will be limited")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -62,6 +70,21 @@ class IntelligentScraper:
             logger.warning("browser-use available but no API key found. Set OPENAI_API_KEY in .env file")
         else:
             logger.info("browser-use not available - natural language requests disabled")
+        
+        # Initialize Firecrawl if available
+        self.firecrawl_app = None
+        if FIRECRAWL_AVAILABLE:
+            firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+            if firecrawl_api_key:
+                try:
+                    self.firecrawl_app = AsyncFirecrawlApp(api_key=firecrawl_api_key)
+                    logger.info("Firecrawl app initialized successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize Firecrawl app: {e}")
+            else:
+                logger.warning("Firecrawl available but no API key found. Set FIRECRAWL_API_KEY in .env file")
+        else:
+            logger.info("Firecrawl not available - crawling functionality disabled")
     
     def is_natural_language_request(self, request: str) -> bool:
         """
@@ -87,12 +110,33 @@ class IntelligentScraper:
         request_lower = request.lower()
         return any(indicator in request_lower for indicator in nl_indicators)
     
+    def is_crawl_request(self, request: str) -> bool:
+        """
+        Determine if the request is a crawl command.
+        """
+        request_lower = request.lower().strip()
+        return request_lower.startswith('crawl ')
+    
+    def extract_url_from_crawl_request(self, request: str) -> Optional[str]:
+        """
+        Extract URL from a crawl request like "crawl https://example.com".
+        """
+        request_lower = request.lower().strip()
+        if request_lower.startswith('crawl '):
+            url_part = request[6:].strip()  # Remove "crawl " prefix
+            # Check if it's a valid URL
+            if url_part.startswith(('http://', 'https://', 'www.')):
+                return url_part
+        return None
+    
     async def process_request(self, request: str, max_items: int = 10) -> Dict[str, Any]:
         """
         Process either a direct URL or natural language request.
         """
         if self.is_natural_language_request(request):
             return await self.handle_natural_language_request(request, max_items)
+        elif self.is_crawl_request(request):
+            return await self.handle_crawl_request(request)
         else:
             return await self.handle_direct_url(request, max_items)
     
@@ -148,6 +192,43 @@ class IntelligentScraper:
             logger.error(f"Error processing natural language request: {e}")
             return {"error": str(e), "items": []}
     
+    async def handle_crawl_request(self, request: str) -> Dict[str, Any]:
+        """
+        Handle crawl requests using Firecrawl.
+        """
+        if not FIRECRAWL_AVAILABLE or not self.firecrawl_app:
+            return {
+                "error": "Firecrawl not available. Install with: pip install firecrawl-py and set FIRECRAWL_API_KEY",
+                "items": []
+            }
+        
+        url = self.extract_url_from_crawl_request(request)
+        if not url:
+            return {
+                "error": "Invalid crawl request. Use format: 'crawl https://example.com'",
+                "items": []
+            }
+        
+        logger.info(f"Processing crawl request for: {url}")
+        
+        try:
+            # Use hardcoded limit of 5 as requested
+            response = await self.firecrawl_app.crawl_url(
+                url=url,
+                limit=5,
+                scrape_options=ScrapeOptions(
+                    formats=['markdown'],
+                    onlyMainContent=True
+                )
+            )
+            
+            # Parse the response and convert to knowledgebase format
+            return self._parse_firecrawl_result(response, url)
+            
+        except Exception as e:
+            logger.error(f"Error processing crawl request for {url}: {e}")
+            return {"error": str(e), "items": []}
+    
     def _enhance_task_description(self, request: str, max_items: int) -> str:
         """
         Enhance the natural language request with specific instructions.
@@ -201,6 +282,61 @@ class IntelligentScraper:
         except Exception as e:
             logger.error(f"Error parsing browser result: {e}")
             return {"error": str(e), "items": []}
+    
+    def _parse_firecrawl_result(self, response: Any, original_url: str) -> Dict[str, Any]:
+        """
+        Parse Firecrawl result and convert to knowledgebase format.
+        """
+        try:
+            items = []
+            
+            # Check if response has data
+            if hasattr(response, 'data') and response.data:
+                for item in response.data:
+                    if hasattr(item, 'markdown') and item.markdown:
+                        items.append({
+                            "title": self._extract_title_from_markdown(item.markdown) or f"Page from {original_url}",
+                            "content": item.markdown,
+                            "content_type": "web_page",
+                            "source_url": getattr(item, 'url', original_url),
+                            "author": "",
+                            "user_id": ""
+                        })
+            
+            # Generate unique ID for the output file
+            import time
+            timestamp = int(time.time())
+            
+            # Save to JSON file
+            output_data = {
+                "team_id": self.team_id,
+                "items": items
+            }
+            
+            output_filename = f"scraped_data_{timestamp}.json"
+            with open(output_filename, 'w', encoding='utf-8') as f:
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"Crawl results saved to {output_filename}")
+            
+            return output_data
+            
+        except Exception as e:
+            logger.error(f"Error parsing Firecrawl result: {e}")
+            return {"error": str(e), "items": []}
+    
+    def _extract_title_from_markdown(self, markdown_content: str) -> Optional[str]:
+        """
+        Extract title from markdown content.
+        """
+        lines = markdown_content.split('\n')
+        for line in lines:
+            line = line.strip()
+            if line.startswith('# '):
+                return line[2:].strip()
+            elif line.startswith('## '):
+                return line[3:].strip()
+        return None
     
     def _extract_meaningful_title(self, content: str, original_request: str) -> str:
         """
@@ -394,15 +530,40 @@ class IntelligentScraper:
     
     def _is_likely_blog(self, url: str) -> bool:
         """
-        Determine if a URL is likely a blog.
+        Determine if a URL is likely a blog homepage (not an individual blog post).
         """
-        blog_indicators = [
-            '/blog', '/posts', '/articles', '/news', '/feed',
-            'medium.com', 'substack.com', 'wordpress.com'
+        # Check if it's likely an individual blog post (has specific post identifiers)
+        post_indicators = [
+            '/blog/', '/posts/', '/articles/', '/news/',  # Common blog post paths
+            '/202', '/2023/', '/2024/', '/2025/',  # Year-based posts
+            '/jan/', '/feb/', '/mar/', '/apr/', '/may/', '/jun/',  # Month-based posts
+            '/jul/', '/aug/', '/sep/', '/oct/', '/nov/', '/dec/',
+            'post-', 'article-', 'blog-',  # Post identifiers
+            '.html', '.php', '.aspx'  # File extensions
         ]
         
         url_lower = url.lower()
-        return any(indicator in url_lower for indicator in blog_indicators)
+        
+        # If URL contains post indicators, it's likely an individual post
+        for indicator in post_indicators:
+            if indicator in url_lower:
+                return False
+        
+        # Check if it's likely a blog homepage
+        blog_homepage_indicators = [
+            '/blog$', '/posts$', '/articles$', '/news$',  # Ends with blog paths
+            'medium.com', 'substack.com', 'wordpress.com'  # Known blog platforms
+        ]
+        
+        for indicator in blog_homepage_indicators:
+            if indicator.endswith('$'):
+                # Use regex for end-of-string matching
+                if re.search(indicator, url_lower):
+                    return True
+            elif indicator in url_lower:
+                return True
+        
+        return False
 
 # --- CLI Interface ---
 async def main():

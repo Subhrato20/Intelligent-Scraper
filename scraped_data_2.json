@@ -1,0 +1,93 @@
+[
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": "Subhrato_Som_Resume_2024__Copy_.pdf - Google Drive",
+        "content": "",
+        "content_type": "blog",
+        "source_url": "https://drive.google.com/file/d/1muObsR_yMkt26JZW9whlkWuAh1vjlF1z/view?usp=sharing",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  },
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": "Subhrato_Som_Resume_2024__Copy_.pdf - Google Drive",
+        "content": "",
+        "content_type": "blog",
+        "source_url": "https://drive.google.com/file/d/1muObsR_yMkt26JZW9whlkWuAh1vjlF1z/view?usp=sharing",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  },
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": "Subhrato_Som_Resume_2024__Copy_.pdf - Google Drive",
+        "content": "",
+        "content_type": "blog",
+        "source_url": "https://drive.google.com/file/d/1muObsR_yMkt26JZW9whlkWuAh1vjlF1z/view",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  },
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": "Subhrato_Som_Resume_2024__Copy_.pdf - Google Drive",
+        "content": "",
+        "content_type": "blog",
+        "source_url": "https://drive.google.com/file/d/1muObsR_yMkt26JZW9whlkWuAh1vjlF1z/view?usp=sharing",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  },
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": " - Pages 1-1",
+        "content": "Subhrato Som\n\n+1 (215) 240-9510 |subhratosom17@gmail.com |linkedin.com/in/subhratosom |github.com/Subhrato20\n\n## EDUCATION\n\nDrexel University - Philadelphia, PA Sep. 2023 \u2013 Jun. 2025\n\nMaster\u2019s of Science in Computer Science GPA 3.80/4.00\n\nVellore Institute of Technology - Chennai, India Jul. 2019 \u2013 Jun. 2023\n\nBachelor\u2019s Degree in Computer Science GPA: 8.25/10.00\n\n## EXPERIENCE\n\nSoftware Engineer (AI Tools Development) Jun. 2024 \u2013 Dec. 2024\n\nMathtech, Inc Hamilton, NJ\n\n\u2022Built a scalable, cloud-native Retrieval-Augmented Generation (RAG) system on AWS using Flask and Streamlit and participating in\n\nroadmapping and architecture discussions to align design with business consulting needs\n\n\u2022Engineered a robust pipeline using S3 for storage, SageMaker for deploying Llama3, and Milvus (EC2) for document storage, embedding,\n\nvector search, and context-aware output generation with an LLM, streamlining workflows through text-based query resolution\n\n\u2022Enhanced response performance by 30% using adaptive chunking, BERT-based chunk ranking, and dense embeddings using BAAI/bge-m3\n\n\u2022Implemented automated shutdown of underutilized SageMaker resources based on usage patterns, cutting operational costs by 80%\n\n\u2022Enabled secure user authentication for internal users by integrating AWS Cognito, improving access reliability and streamlining the\n\nauthorization flow\n\nSoftware Engineer (Research) Feb. 2024 \u2013 Present\n\nSocial-NLP Lab, CCI Drexel University Philadelphia, PA\n\n\u2022Conducted in-depth research on substance abuse memes on Reddit, to identify trends and insights for academic understanding\n\n\u2022Utilized Large Language Models (Llama, GPT) to analyze and interpret textual and visual elements, advancing the field of digital sociology\n\n\u2022Worked on comparative analysis of multiple LLM, focusing on application-specific strengths to derive actionable insights for the research\n\n\u2022Implemented batch API methods for GPT-based inference, significantly improving processing efficiency for large-scale textual datasets\n\n## PROJECTS\n\nVoice Agent for Wealth Management (DragonHacks 2025) |Gemini, Function Calling, Retell, FastAPI, Next.js Apr. 2025\n\n\u2022Developed a voice-enabled AI wealth advisor using Gemini 2.5 and Retell SDK to execute real-time stock analysis, personalized\n\nrecommendations, and auto-trading via conversational voice calls\n\n\u2022Designed a modular full-stack system with Next.js dashboards for dynamic portfolio tracking, transaction history, and user-specific insights\n\nGPT Operator Agent for Phone Devices (Bitcamp 2025) |Gemini, Function Calling, Pydantic, Kotlin, WebSockets Apr. 2025\n\n\u2022Built a native Android agent that automates UI tasks using Accessibility Service and real-time screen state via MediaProjection API\n\n\u2022Engineered a grid-based coordinate tracker integrated with modular prompts, session state management, and dynamic UI automation using\n\nPydantic schemas and OpenAI-style function calling with Gemini 2.5 Pro\n\n\u2022Achieved sub-5s latency with bidirectional WebSocket communication and full local execution\n\nAI-Powered Visual Style-to-Product Pipeline (HooHacks 2025 Win) |Gemini, GAN, Serp API, Flask, React Native, AWS Mar. 2025\n\n\u2022Built an Image Generation pipeline that recommends AI-designed concept shoes based on user\u2019s outfit using Gemini 2.0 Flash Experimental\n\n\u2022Implemented reverse image search with Serp API and used Gemini 2.5 Pro to extract genuine product details like name, price, store, and etc\n\n\u2022Engineered a Generator-Discriminator architecture inspired by GANs to generate precise, style-aligned concept shoes\n\nRAG-Based AI Agent for Xfinity Services (Codefest 2025 Win) |Milvus, Claude, Perplexity, Firecrawl, Flask, React.js, EC2 Mar. 2025\n\n\u2022Built an end-to-end AI Agent to help users identify personalized Xfinity services and bundles based on their persona and prompt\n\n\u2022Implemented Retrieval-Augmented Generation (RAG) using Milvus as a Vector DB with webpage scraped via Firecrawl\n\n\u2022Integrated Claude 3.7 for efficient responses and Perplexity to automate competitive product research, boosting insight accuracy by 40%\n\nTest-Driven Snake Game using Design Patterns |Java, MVC, TDD, Mutation Testing, Static Analysis Feb. 2025\n\n\u2022Built a Java-based 2D Snake Game using MVC and design patterns (Factory, Adapter, Strategy), reaching 76% mutation coverage through\n\nJUnit, Mockito, and Cucumber tests and ensured clean architecture and zero critical issues through SOLID and static analysis\n\nClimate Risk Analytics Platform (Codefest 2024 Win) |Flask, PyTorch, AutoEncoders, EC2 Apr. 2024\n\n\u2022Developed a risk analysis platform using Poisson Distribution, Autoencoder and Logistic Regression in PyTorch, achieving 89% accuracy to\n\npredict financial damages from natural disasters\n\n\u2022Designed an interactive US map and deployed a responsive Flask app on AWS EC2 for seamless user experience\n\nAlzheimer\u2019s Classification using OASIS Dataset |Python, CNN, Custom-LDA, PCA, Canny Edge Detection Nov. 2023 \u2013 Dec. 2023\n\n\u2022Designed custom Logistic Regression, LDA, and CNN models built from scratch for MRI analysis, achieving 86% ensemble accuracy\n\n\u2022Processed 80K+ medical images by applying Canny edge detection, Gaussian blur and PCA enhancing feature extraction accuracy by 20%\n\nChest X-ray Classification and Captioning |Tensorflow, CNN, LSTM, Transformers Jan. 2023 \u2013 Apr. 2023\n\n\u2022Built encoder-decoder models with TensorFlow, boosting chest X-ray disease classification and captioning accuracy to 86%\n\n\u2022Leveraged CNNs (VGG16, ResNet) for feature extraction, followed by LSTMs and Transformers to capture global patterns\n\n## TECHNICAL SKILLS\n\nLanguages : Python, Java, JavaScript, Matlab, Swift, Julia, Rust, C, C++\n\nCloud & DevOps : AWS (EC2, SageMaker, Lambda, Glue, ECR), GCP, NGINX, Docker, Jenkins, Kubernetes, Terraform, Pulumi\n\nWeb : HTML, CSS, React.js, Vue.js, Node.js, Express.js, Angular, Flask, Django, FastAPI, Streamlit\n\nMachine Learning : Scikit-learn, TensorFlow, PyTorch, CUDA, LangChain, LlamaIndex, faiss, HuggingFace\n\nDatabase : MySQL, PostgreSQL, MongoDB, SQLite, DynamoDB, Milvus, Qdrant, Pinecone\n\n## ACHIEVEMENT\n\nGoogle Gemini API Challenge Winner , HooHacks 2025 Mar. 2025\n\nComcast Challenge Winner , Philly Codefest 2025 Mar. 2025\n\nChubb Challenge Winner , Philly Codefest 2024 Apr. 2024",
+        "content_type": "book",
+        "source_url": "file:///Users/subhratosom/Desktop/Res/Subhrato_Som_Resume_2025.pdf",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  },
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": "Subhrato_Som_Resume_2024__Copy_.pdf - Google Drive",
+        "content": "",
+        "content_type": "blog",
+        "source_url": "https://drive.google.com/file/d/1muObsR_yMkt26JZW9whlkWuAh1vjlF1z/view",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  },
+  {
+    "team_id": "2",
+    "items": [
+      {
+        "title": "Subhrato_Som_Resume_2024__Copy_.pdf - Google Drive",
+        "content": "",
+        "content_type": "blog",
+        "source_url": "https://drive.google.com/file/d/1muObsR_yMkt26JZW9whlkWuAh1vjlF1z/view",
+        "author": "",
+        "user_id": ""
+      }
+    ]
+  }
+]

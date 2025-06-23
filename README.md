@@ -22,6 +22,14 @@ An enhanced layer for the THT Scraper that supports both direct URL scraping and
 "Go to Stack Overflow and get the most upvoted Python question"
 ```
 
+### 🕷️ Website Crawling (New!)
+```python
+# Crawl entire websites with Firecrawl
+"crawl https://interviewing.io/blog"
+"crawl https://quill.co/blog"
+"crawl https://medium.com/tag/python"
+```
+
 ## 🚀 Quick Start
 
 ### Installation
@@ -35,6 +43,22 @@ pip install browser-use
 
 # Install Playwright browser
 playwright install chromium --with-deps --no-shell
+```
+
+### Environment Setup
+
+Create a `.env` file in your project directory:
+
+```bash
+# Required for natural language requests
+OPENAI_API_KEY=your-openai-api-key
+
+# Required for website crawling
+FIRECRAWL_API_KEY=your-firecrawl-api-key
+
+# Optional settings
+BROWSER_USE_TIMEOUT=300
+BROWSER_USE_HEADLESS=true
 ```
 
 ### Basic Usage
@@ -63,6 +87,9 @@ async def main():
     # Natural language (requires API key)
     result = await scraper.process_request("Go to Quora software engineering and scrape the second post")
     
+    # Website crawling (requires Firecrawl API key)
+    result = await scraper.process_request("crawl https://interviewing.io/blog")
+    
     print(f"Extracted {len(result['items'])} items")
 
 asyncio.run(main())
@@ -81,6 +108,12 @@ asyncio.run(main())
 - **Content Selection**: "scrape the second post"
 - **Search Queries**: "Search for React tutorials on Medium"
 - **Complex Workflows**: "Visit Reddit r/programming and get the top 5 posts"
+
+### Crawl Commands
+- **Website Crawling**: "crawl https://interviewing.io/blog"
+- **Blog Crawling**: "crawl https://quill.co/blog"
+- **Tag Pages**: "crawl https://medium.com/tag/python"
+- **News Sites**: "crawl https://techcrunch.com"
 
 ## 🏗️ Architecture
 
@@ -139,6 +172,9 @@ User Request → IntelligentScraper.is_natural_language_request()
 # Required for natural language requests
 OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Required for website crawling
+FIRECRAWL_API_KEY=your-firecrawl-api-key
 
 # Optional settings
 BROWSER_USE_TIMEOUT=300
