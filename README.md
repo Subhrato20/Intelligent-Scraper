@@ -2,7 +2,7 @@
 
 An enhanced layer for the THT Scraper that supports both direct URL scraping and natural language requests using [browser-use](https://github.com/browser-use/browser-use).
 
-## ✨ New Capabilities
+## ✨Capabilities
 
 ### 🌐 Direct URL Scraping
 ```python
