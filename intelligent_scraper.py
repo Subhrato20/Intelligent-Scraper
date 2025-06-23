@@ -189,7 +189,7 @@ class IntelligentScraper:
             return {
                 "team_id": self.team_id,
                 "items": [{
-                    "title": f"Content from: {original_request}",
+                    "title": self._extract_meaningful_title(content, original_request),
                     "content": content,
                     "content_type": "web_page",
                     "source_url": f"request://{original_request}",
@@ -201,6 +201,148 @@ class IntelligentScraper:
         except Exception as e:
             logger.error(f"Error parsing browser result: {e}")
             return {"error": str(e), "items": []}
+    
+    def _extract_meaningful_title(self, content: str, original_request: str) -> str:
+        """
+        Extract a meaningful title from content or request.
+        """
+        # First, try to extract title from content
+        title = self._extract_title_from_content(content)
+        if title:
+            return title
+        
+        # If no title found in content, create a better title from the request
+        return self._create_title_from_request(original_request)
+    
+    def _extract_title_from_content(self, content: str) -> Optional[str]:
+        """
+        Extract meaningful title from content using various strategies.
+        """
+        # Strategy 1: Look for markdown headers
+        header_patterns = [
+            r'^#\s+(.+)$',  # # Title
+            r'^##\s+(.+)$',  # ## Title
+            r'^###\s+(.+)$',  # ### Title
+            r'<h1[^>]*>(.+?)</h1>',  # <h1>Title</h1>
+            r'<h2[^>]*>(.+?)</h2>',  # <h2>Title</h2>
+        ]
+        
+        lines = content.split('\n')
+        for line in lines[:10]:  # Check first 10 lines
+            line = line.strip()
+            for pattern in header_patterns:
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    title = match.group(1).strip()
+                    if len(title) > 5 and len(title) < 200:  # Reasonable length
+                        return self._clean_title(title)
+        
+        # Strategy 2: Look for JSON-like structures with title
+        json_patterns = [
+            r'"title"\s*:\s*"([^"]+)"',
+            r'"name"\s*:\s*"([^"]+)"',
+            r'"heading"\s*:\s*"([^"]+)"',
+        ]
+        
+        for pattern in json_patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                title = match.group(1).strip()
+                if len(title) > 5 and len(title) < 200:
+                    return self._clean_title(title)
+        
+        # Strategy 3: Look for the first meaningful line
+        for line in lines[:20]:  # Check first 20 lines
+            line = line.strip()
+            # Skip empty lines, markdown formatting, etc.
+            if (line and 
+                not line.startswith('#') and 
+                not line.startswith('*') and 
+                not line.startswith('-') and
+                not line.startswith('```') and
+                len(line) > 10 and 
+                len(line) < 150):
+                return self._clean_title(line)
+        
+        return None
+    
+    def _create_title_from_request(self, request: str) -> str:
+        """
+        Create a meaningful title from the original request.
+        """
+        # Remove common prefixes
+        request_lower = request.lower()
+        
+        # Extract key information from request
+        if 'reddit' in request_lower:
+            # Extract subreddit name
+            subreddit_match = re.search(r'r/([a-zA-Z0-9_]+)', request_lower)
+            if subreddit_match:
+                subreddit = subreddit_match.group(1)
+                return f"Top Posts from r/{subreddit}"
+        
+        elif 'quora' in request_lower:
+            # Extract topic - look for words after "quora" and before "and" or end
+            topic_match = re.search(r'quora\s+([^a]+?)(?:\s+and|\s*$)', request_lower)
+            if topic_match:
+                topic = topic_match.group(1).strip()
+                return f"Quora: {topic.title()}"
+        
+        elif 'medium' in request_lower:
+            # Extract search terms - look for words after "for" and before end
+            search_match = re.search(r'search.*?for\s+([^a]+?)(?:\s*$)', request_lower)
+            if search_match:
+                search_terms = search_match.group(1).strip()
+                return f"Medium Articles: {search_terms.title()}"
+        
+        elif 'wikipedia' in request_lower:
+            # Extract search terms - look for words after "for" and before end
+            search_match = re.search(r'wikipedia.*?for\s+([^a]+?)(?:\s*$)', request_lower)
+            if search_match:
+                search_terms = search_match.group(1).strip()
+                return f"Wikipedia: {search_terms.title()}"
+        
+        elif 'stack overflow' in request_lower or 'stackoverflow' in request_lower:
+            return "Stack Overflow Questions"
+        
+        elif 'hacker news' in request_lower or 'hn' in request_lower:
+            return "Hacker News Top Stories"
+        
+        # Generic fallback
+        words = request.split()
+        if len(words) > 3:
+            # Take first few meaningful words
+            meaningful_words = [w for w in words[:6] if len(w) > 2 and w.lower() not in ['go', 'to', 'and', 'get', 'the', 'top', 'posts', 'from', 'for', 'about']]
+            if meaningful_words:
+                return f"{' '.join(meaningful_words[:4]).title()}"
+        
+        # Last resort: clean up the original request
+        return self._clean_title(request)
+    
+    def _clean_title(self, title: str) -> str:
+        """
+        Clean and format a title.
+        """
+        # Remove extra whitespace
+        title = re.sub(r'\s+', ' ', title.strip())
+        
+        # Remove markdown formatting
+        title = re.sub(r'[*_`#]', '', title)
+        
+        # Remove HTML tags
+        title = re.sub(r'<[^>]+>', '', title)
+        
+        # Remove URLs
+        title = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', title)
+        
+        # Capitalize first letter of each word (title case)
+        title = title.title()
+        
+        # Limit length
+        if len(title) > 100:
+            title = title[:97] + "..."
+        
+        return title.strip()
     
     def _convert_to_knowledgebase_format(self, data: Dict[str, Any], original_request: str) -> Dict[str, Any]:
         """
@@ -227,8 +369,17 @@ class IntelligentScraper:
         knowledgebase_items = []
         for item in items:
             if isinstance(item, dict):
+                # Extract and clean title
+                raw_title = item.get('title', '')
+                if raw_title:
+                    title = self._clean_title(raw_title)
+                else:
+                    # If no title in item, try to extract from content
+                    content = item.get('content', str(item))
+                    title = self._extract_meaningful_title(content, original_request)
+                
                 knowledgebase_items.append({
-                    "title": item.get('title', f"Content from: {original_request}"),
+                    "title": title,
                     "content": item.get('content', str(item)),
                     "content_type": item.get('content_type', 'web_page'),
                     "source_url": item.get('source_url', f"request://{original_request}"),
@@ -324,12 +475,21 @@ async def main():
             else:
                 print(f"\n✅ Success! Extracted {len(result.get('items', []))} items")
                 
-                # Save to file
-                output_file = f"intelligent_scrape_{team_id}.json"
+                # Append to file instead of overwriting
+                output_file = f"scraped_data_{team_id}.json"
+                if os.path.exists(output_file):
+                    with open(output_file, 'r') as f:
+                        try:
+                            all_results = json.load(f)
+                        except Exception:
+                            all_results = []
+                else:
+                    all_results = []
+                all_results.append(result)
                 with open(output_file, 'w') as f:
-                    json.dump(result, f, indent=2)
+                    json.dump(all_results, f, indent=2)
                 
-                print(f"📄 Saved to: {output_file}")
+                print(f"📄 Appended to: {output_file}")
                 
                 # Show sample
                 if result.get('items'):
