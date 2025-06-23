@@ -65,9 +65,6 @@ OPENAI_API_KEY=your-openai-api-key
 # Required for website crawling
 FIRECRAWL_API_KEY=your-firecrawl-api-key
 
-# Required for intelligent URL processing (uses o1-mini)
-OPENAI_API_KEY=your-openai-api-key
-
 # Optional settings
 BROWSER_USE_TIMEOUT=300
 BROWSER_USE_HEADLESS=true
@@ -193,7 +190,6 @@ User Request → IntelligentScraper.is_natural_language_request()
 ```bash
 # Required for natural language requests
 OPENAI_API_KEY=your-openai-api-key
-ANTHROPIC_API_KEY=your-anthropic-api-key
 
 # Required for website crawling
 FIRECRAWL_API_KEY=your-firecrawl-api-key
@@ -202,14 +198,6 @@ FIRECRAWL_API_KEY=your-firecrawl-api-key
 BROWSER_USE_TIMEOUT=300
 BROWSER_USE_HEADLESS=true
 ```
-
-### API Keys Supported
-- OpenAI (GPT-4o, GPT-4)
-- Anthropic (Claude)
-- Google (Gemini)
-- DeepSeek
-- Grok
-- Novita
 
 ## 📊 Performance
 
